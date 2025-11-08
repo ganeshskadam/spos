@@ -1,0 +1,121 @@
+
+import java.util.Scanner;
+
+class MemoryBlock {
+    int size;
+    boolean allocated;
+
+    MemoryBlock(int size) {
+        this.size = size;
+        this.allocated = false;
+    }
+}
+
+class Process {
+    int size;
+    int allocatedBlockIndex = -1; // -1 means not allocated
+    int fragmentation = 0;
+
+    Process(int size) {
+        this.size = size;
+    }
+}
+
+public class FirstFitMemoryAllocation {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Input memory blocks
+        System.out.print("Enter number of memory blocks: ");
+        int numBlocks = sc.nextInt();
+        MemoryBlock[] memory = new MemoryBlock[numBlocks];
+        System.out.println("Enter sizes of memory blocks:");
+        for (int i = 0; i < numBlocks; i++) {
+            System.out.print("Block " + (i + 1) + ": ");
+            memory[i] = new MemoryBlock(sc.nextInt());
+        }
+
+        // Input processes
+        System.out.print("\nEnter number of processes: ");
+        int numProcesses = sc.nextInt();
+        Process[] processes = new Process[numProcesses];
+        System.out.println("Enter sizes of processes:");
+        for (int i = 0; i < numProcesses; i++) {
+            System.out.print("Process " + (i + 1) + ": ");
+            processes[i] = new Process(sc.nextInt());
+        }
+
+        // First Fit Allocation
+        for (int i = 0; i < numProcesses; i++) {
+            for (int j = 0; j < numBlocks; j++) {
+                if (!memory[j].allocated && memory[j].size >= processes[i].size) {
+                    processes[i].allocatedBlockIndex = j;
+                    processes[i].fragmentation = memory[j].size - processes[i].size;
+                    memory[j].allocated = true;
+                    break;
+                }
+            }
+        }
+
+        // Output results
+        System.out.println("\nAllocation Result:");
+        System.out.println("Process\tSize\tBlock\tFragmentation");
+        for (int i = 0; i < numProcesses; i++) {
+            if (processes[i].allocatedBlockIndex != -1) {
+                System.out.println("P" + (i + 1) + "\t" + processes[i].size +
+                        "\tBlock " + (processes[i].allocatedBlockIndex + 1) + "\t" +
+                        processes[i].fragmentation);
+            } else {
+                System.out.println("P" + (i + 1) + "\t" + processes[i].size +
+                        "\tNot Allocated");
+            }
+        }
+
+        sc.close();
+    }
+}
+
+Output:-
+Enter number of memory blocks: 3
+Enter sizes of memory blocks:
+Block 1: 100
+Block 2: 500
+Block 3: 200
+
+Enter number of processes: 4
+Enter sizes of processes:
+Process 1: 212
+Process 2: 417
+Process 3: 112
+Process 4: 426
+
+
+
+What this program does:
+                      This program shows how a computer’s main memory (RAM) can be divided and allocated to different processes (programs) using a method called First Fit.
+Main Concept Used:
+                  Memory Management in Operating System
+                  When multiple programs (processes) run together, the operating system must decide where to place each process in memory.
+                  Memory is divided into small parts called blocks or partitions.
+                  Each process needs some amount of memory to execute.
+ Memory Allocation:-
+The OS divides memory into fixed-size or variable-size blocks.
+Each process requires a certain amount of memory. When a process arrives, the OS must decide which memory block should be given to that process.
+
+First Fit Algorithm
+
+Definition:
+The First Fit algorithm allocates the first memory block that is large enough to accommodate a process.
+
+Steps:
+Start scanning memory blocks from the beginning.
+When a block is found that is big enough for the process, allocate that block to the process.
+Mark that block as allocated.
+If no suitable block is found, the process remains unallocated.
+The unused part of the allocated block (if any) is called internal fragmentation.
+
+Internal Fragmentation:-
+When a process does not fully utilize the memory block assigned to it, the unused portion of that block is called internal fragmentation.
+It leads to wastage of memory inside allocated blocks.
+
+

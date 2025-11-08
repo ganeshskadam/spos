@@ -1,0 +1,110 @@
+import java.util.Scanner;
+
+class MemoryBlock {
+    int size;
+    boolean allocated;
+
+    MemoryBlock(int size) {
+        this.size = size;
+        this.allocated = false;
+    }
+}
+
+class Process {
+    int size;
+    int allocatedBlockIndex = -1; // -1 means not allocated
+    int fragmentation = 0;
+
+    Process(int size) {
+        this.size = size;
+    }
+}
+
+public class WorstFitMemoryAllocation {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Input memory blocks
+        System.out.print("Enter number of memory blocks: ");
+        int numBlocks = sc.nextInt();
+        MemoryBlock[] memory = new MemoryBlock[numBlocks];
+        System.out.println("Enter sizes of memory blocks:");
+        for (int i = 0; i < numBlocks; i++) {
+            System.out.print("Block " + (i + 1) + ": ");
+            memory[i] = new MemoryBlock(sc.nextInt());
+        }
+
+        // Input processes
+        System.out.print("\nEnter number of processes: ");
+        int numProcesses = sc.nextInt();
+        Process[] processes = new Process[numProcesses];
+        System.out.println("Enter sizes of processes:");
+        for (int i = 0; i < numProcesses; i++) {
+            System.out.print("Process " + (i + 1) + ": ");
+            processes[i] = new Process(sc.nextInt());
+        }
+
+        // Worst Fit Allocation
+        for (int i = 0; i < numProcesses; i++) {
+            int worstIndex = -1;
+            int maxSize = -1;
+
+            // Find the largest free block that fits the process
+            for (int j = 0; j < numBlocks; j++) {
+                if (!memory[j].allocated && memory[j].size >= processes[i].size) {
+                    if (memory[j].size > maxSize) {
+                        maxSize = memory[j].size;
+                        worstIndex = j;
+                    }
+                }
+            }
+
+            // If found, allocate the process
+            if (worstIndex != -1) {
+                processes[i].allocatedBlockIndex = worstIndex;
+                processes[i].fragmentation = memory[worstIndex].size - processes[i].size;
+                memory[worstIndex].allocated = true;
+            }
+        }
+
+        // Output allocation result
+        System.out.println("\nAllocation Result:");
+        System.out.println("Process\tSize\tBlock\tFragmentation");
+        for (int i = 0; i < numProcesses; i++) {
+            if (processes[i].allocatedBlockIndex != -1) {
+                System.out.println("P" + (i + 1) + "\t" + processes[i].size +
+                        "\tBlock " + (processes[i].allocatedBlockIndex + 1) + "\t" +
+                        processes[i].fragmentation);
+            } else {
+                System.out.println("P" + (i + 1) + "\t" + processes[i].size + "\tNot Allocated");
+            }
+        }
+
+        sc.close();
+    }
+}
+
+ Output:-
+Enter number of memory blocks: 3
+Enter sizes of memory blocks:
+Block 1: 100
+Block 2: 500
+Block 3: 200
+
+Enter number of processes: 3
+Enter sizes of processes:
+Process 1: 212
+Process 2: 417
+Process 3: 112
+
+In a computer system, memory management plays a very important role. Whenever multiple programs (called processes) are running, the operating system (OS) must allocate memory to each of them. Memory allocation means assigning portions of the main memory (RAM) to processes so that they can execute properly.
+The OS divides the available memory into small parts known as memory blocks. Each process requires a specific amount of memory. When a process arrives, the OS has to decide which memory block should be assigned to it. Different memory placement strategies are used to make this decision
+
+What is the Worst Fit Strategy;-
+The Worst Fit memory allocation method works on the idea of allocating the largest available free memory block to the process that is requesting memory.
+When a new process arrives:
+The OS scans all the memory blocks that are free.
+It finds the block with the largest size that is big enough to accommodate the process.
+That largest block is then assigned to the process.
+Any unused portion of the block becomes internal fragmentation.
+The main idea behind Worst Fit is that by using the biggest available block, the remaining free space (after allocation) will still be large enough to fit future processes, reducing the number of small unusable fragments.

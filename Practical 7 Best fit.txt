@@ -1,0 +1,119 @@
+package P1;
+
+import java.util.Scanner;
+
+class MemoryBlock {
+    int size;
+    boolean allocated;
+
+    MemoryBlock(int size) {
+        this.size = size;
+        this.allocated = false;
+    }
+}
+
+class Process {
+    int size;
+    int allocatedBlockIndex = -1; // -1 means not allocated
+    int fragmentation = 0;
+
+    Process(int size) {
+        this.size = size;
+    }
+}
+
+public class BestFitMemoryAllocation {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Input memory blocks
+        System.out.print("Enter number of memory blocks: ");
+        int numBlocks = sc.nextInt();
+        MemoryBlock[] memory = new MemoryBlock[numBlocks];
+        System.out.println("Enter sizes of memory blocks:");
+        for (int i = 0; i < numBlocks; i++) {
+            System.out.print("Block " + (i + 1) + ": ");
+            memory[i] = new MemoryBlock(sc.nextInt());
+        }
+
+        // Input processes
+        System.out.print("\nEnter number of processes: ");
+        int numProcesses = sc.nextInt();
+        Process[] processes = new Process[numProcesses];
+        System.out.println("Enter sizes of processes:");
+        for (int i = 0; i < numProcesses; i++) {
+            System.out.print("Process " + (i + 1) + ": ");
+            processes[i] = new Process(sc.nextInt());
+        }
+
+        // Best Fit Allocation
+        for (int i = 0; i < numProcesses; i++) {
+            int bestIndex = -1;
+            int minFragment = Integer.MAX_VALUE;
+
+            // Find the block with the least leftover space (best fit)
+            for (int j = 0; j < numBlocks; j++) {
+                if (!memory[j].allocated && memory[j].size >= processes[i].size) {
+                    int frag = memory[j].size - processes[i].size;
+                    if (frag < minFragment) {
+                        minFragment = frag;
+                        bestIndex = j;
+                    }
+                }
+            }
+
+            // If found, allocate the process
+            if (bestIndex != -1) {
+                processes[i].allocatedBlockIndex = bestIndex;
+                processes[i].fragmentation = memory[bestIndex].size - processes[i].size;
+                memory[bestIndex].allocated = true;
+            }
+        }
+
+        // Output results
+        System.out.println("\nAllocation Result:");
+        System.out.println("Process\tSize\tBlock\tFragmentation");
+        for (int i = 0; i < numProcesses; i++) {
+            if (processes[i].allocatedBlockIndex != -1) {
+                System.out.println("P" + (i + 1) + "\t" + processes[i].size +
+                        "\tBlock " + (processes[i].allocatedBlockIndex + 1) + "\t" +
+                        processes[i].fragmentation);
+            } else {
+                System.out.println("P" + (i + 1) + "\t" + processes[i].size + "\tNot Allocated");
+            }
+        }
+
+        sc.close();
+    }
+}
+
+Output:-
+Enter number of memory blocks: 3
+Enter sizes of memory blocks:
+Block 1: 100
+Block 2: 500
+Block 3: 200
+
+Enter number of processes: 3
+Enter sizes of processes:
+Process 1: 212
+Process 2: 417
+Process 3: 112
+
+When multiple programs (called processes) are running on a computer, the Operating System (OS) has to assign them space in the main memory (RAM). This is known as memory allocation. The OS must manage memory efficiently so that as many processes as possible can run without wasting memory.
+To do this, the OS divides memory into fixed or variable-sized parts called memory blocks. Each process needs a certain amount of memory, and the OS must decide which block to assign to which process.
+To make this decision, different memory allocation strategies are used
+
+What is the Best Fit Strategy:-
+Best Fit is a memory allocation technique where a process is placed in the smallest available memory block that is large enough to hold it.
+
+How Best Fit Works (Step-by-Step):-
+When a process arrives, the OS checks all available (unallocated) blocks.
+Among all the blocks that can fit the process, it chooses the smallest one.
+The process is placed inside that block.
+Any unused portion of that block becomes fragmentation.
+If no block is large enough, the process is not allocated.
+
+Conclusion:-
+The Best Fit memory allocation method allocates the process to the smallest available block that can hold it.
+It helps to reduce internal fragmentation, but it may cause external fragmentation and can be slow since it searches through all blocks for every allocation.

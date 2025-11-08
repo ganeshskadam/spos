@@ -1,0 +1,128 @@
+
+import java.util.*;
+
+class Process {
+    int pid, arrivalTime, burstTime, priority;
+    int waitingTime = 0, turnaroundTime = 0, completionTime = 0;
+
+    public Process(int pid, int arrivalTime, int burstTime, int priority) {
+        this.pid = pid;
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
+        this.priority = priority;
+    }
+}
+
+public class NonPreemptivePriority {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        Process[] processes = new Process[n];
+
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter arrival time for process " + (i + 1) + ": ");
+            int arrivalTime = sc.nextInt();
+            System.out.print("Enter burst time for process " + (i + 1) + ": ");
+            int burstTime = sc.nextInt();
+            System.out.print("Enter priority for process " + (i + 1) + ": ");
+            int priority = sc.nextInt();
+            processes[i] = new Process(i + 1, arrivalTime, burstTime, priority);
+        }
+
+        // Sort by arrival time (stable) - secondary ordering by priority is not necessary here
+        // since we will pick the highest priority among arrived processes at runtime.
+        Arrays.sort(processes, Comparator.comparingInt(p -> p.arrivalTime));
+
+        int currentTime = 0;
+        int completed = 0;
+        double totalWaitingTime = 0, totalTurnaroundTime = 0;
+
+        System.out.println("\nPID\tArrival\tBurst\tPriority\tCompletion\tWaiting\tTurnaround");
+
+        while (completed < n) {
+            // find highest priority (lowest priority value) among arrived and not completed processes
+            Process current = null;
+            for (Process p : processes) {
+                if (p.arrivalTime <= currentTime && p.completionTime == 0) {
+                    if (current == null || p.priority < current.priority) {
+                        current = p;
+                    }
+                }
+            }
+
+            if (current == null) {
+                // no process has arrived yet or all arrived are completed -> advance time
+                currentTime++;
+                continue;
+            }
+
+            // schedule current process (non-preemptive: run until completion)
+            current.completionTime = currentTime + current.burstTime;
+            current.turnaroundTime = current.completionTime - current.arrivalTime;
+            current.waitingTime = current.turnaroundTime - current.burstTime;
+
+            totalWaitingTime += current.waitingTime;
+            totalTurnaroundTime += current.turnaroundTime;
+
+            System.out.printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\t%d\n",
+                    current.pid, current.arrivalTime, current.burstTime, current.priority,
+                    current.completionTime, current.waitingTime, current.turnaroundTime);
+
+            // advance time and mark completed
+            currentTime = current.completionTime;
+            completed++;
+        }
+
+        System.out.printf("\nAverage Waiting Time: %.2f\n", totalWaitingTime / n);
+        System.out.printf("Average Turnaround Time: %.2f\n", totalTurnaroundTime / n);
+
+        sc.close();
+    }
+}
+
+Output:
+ Enter number of processes: 4
+ Enter arrival time for process 1: 0
+ Enter burst time for process 1: 4
+ Enter priority for process 1: 2
+ Enter arrival time for process 2: 1
+ Enter burst time for process 2: 3
+ Enter priority for process 2: 1
+ Enter arrival time for process 3: 2
+ Enter burst time for process 3: 5
+ Enter priority for process 3: 3
+ Enter arrival time for process 4: 3
+ Enter burst time for process 4: 2
+ Enter priority for process 4: 1
+
+Explanation:
+
+ Process Class:
+Represents each process with attributes like pid, arrivalTime, burstTime, priority, waitingTime, turnaroundTime, and completionTime.
+
+Input:
+The program asks the user to enter the number of processes, and for each process, its arrival time, burst time, and priority.
+
+Sorting:
+Processes are sorted based on their arrival time first.
+During scheduling, the process with highest priority (lowest number) among arrived processes is selected.
+
+Scheduling:
+
+CPU checks all arrived processes and picks the one with the lowest priority value.
+Once selected, the process runs until completion (no interruption).
+The completion, turnaround, and waiting times are calculated for each process.
+
+ Averages:
+The program calculates and prints the Average Waiting Time and Average Turnaround Time after all processes complete.
+
+Arrival Time (AT)	Time when process enters ready queue
+
+Burst Time (BT)	CPU execution time required
+
+Completion Time (CT)	Time at which process finishes
+
+Turnaround Time (TAT)	CT − AT
+
+Waiting Time (WT)	TAT − BT

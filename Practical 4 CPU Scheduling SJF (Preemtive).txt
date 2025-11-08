@@ -1,0 +1,111 @@
+import java.util.*;
+
+class Process {
+    int pid, arrivalTime, burstTime, remainingTime, completionTime, waitingTime, turnaroundTime;
+    boolean isCompleted;
+
+    public Process(int pid, int arrivalTime, int burstTime) {
+        this.pid = pid;
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
+        this.remainingTime = burstTime;
+        this.isCompleted = false;
+    }
+}
+
+public class SJFPreemptive {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        Process[] processes = new Process[n];
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter arrival time for process " + (i + 1) + ": ");
+            int arrivalTime = sc.nextInt();
+            System.out.print("Enter burst time for process " + (i + 1) + ": ");
+            int burstTime = sc.nextInt();
+            processes[i] = new Process(i + 1, arrivalTime, burstTime);
+        }
+
+        Arrays.sort(processes, Comparator.comparingInt(p -> p.arrivalTime));
+
+        int currentTime = 0, completed = 0;
+        double totalWaitingTime = 0, totalTurnaroundTime = 0;
+
+        System.out.println("\nPID\tArrival\tBurst\tCompletion\tWaiting\tTurnaround");
+
+        while (completed < n) {
+            Process current = null;
+            for (Process p : processes) {
+                if (!p.isCompleted && p.arrivalTime <= currentTime) {
+                    if (current == null || p.remainingTime < current.remainingTime) {
+                        current = p;
+                    }
+                }
+            }
+
+            if (current != null) {
+                current.remainingTime--;
+                currentTime++;
+
+                if (current.remainingTime == 0) {
+                    current.completionTime = currentTime;
+                    current.turnaroundTime = current.completionTime - current.arrivalTime;
+                    current.waitingTime = current.turnaroundTime - current.burstTime;
+                    current.isCompleted = true;
+                    completed++;
+                    totalWaitingTime += current.waitingTime;
+                    totalTurnaroundTime += current.turnaroundTime;
+
+                    System.out.printf("%d\t%d\t%d\t%d\t\t%d\t%d\n", current.pid,
+                            current.arrivalTime, current.burstTime, current.completionTime,
+                            current.waitingTime, current.turnaroundTime);
+                }
+            } else {
+                currentTime++;
+            }
+        }
+
+        System.out.printf("\nAverage Waiting Time: %.2f", totalWaitingTime / n);
+        System.out.printf("\nAverage Turnaround Time: %.2f", totalTurnaroundTime / n);
+
+        sc.close();
+    }
+}
+
+Output:-
+ Enter number of processes: 4
+Enter arrival time for process 1: 0
+Enter burst time for process 1: 8
+Enter arrival time for process 2: 1
+Enter burst time for process 2: 4
+Enter arrival time for process 3: 2
+Enter burst time for process 3: 9
+Enter arrival time for process 4: 3
+Enter burst time for process 4: 5
+
+Process Class:
+Represents each process with attributes like pid, arrivalTime, burstTime, remainingTime, completionTime, waitingTime, and turnaroundTime.
+
+ Input:
+The program prompts the user to enter the number of processes, and for each process, its arrival time and burst time.
+
+Sorting:
+Processes are initially sorted based on their arrival times to simplify scheduling.
+
+ Scheduling (SJF Preemptive / SRTF):
+
+At every time unit, the scheduler selects the process that has the shortest remaining burst time among all processes that have already arrived.
+
+If a new process arrives with a smaller remaining time than the currently running one, the CPU preempts the running process and switches to the new one.
+
+The program calculates the completion time, waiting time, and turnaround time for each process once it finishes.
+
+ Averages:
+After all processes are executed, the program computes and displays the average waiting time and average turnaround time for all processes.
+
+Arrival Time (AT)	Time when process enters ready queue
+Burst Time (BT)	        CPU execution time required
+Completion Time (CT)	Time at which process finishes
+Turnaround Time (TAT)	CT − AT
+Waiting Time (WT)	TAT − BT
